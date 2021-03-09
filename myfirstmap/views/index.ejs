@@ -26,6 +26,9 @@ const mapOptions = {
 
 const map = new naver.maps.Map('map', mapOptions);
 
+const markerList = [];
+const infowindowlist = [];
+
 for (let i in data) {
     let target = data[i];
     let latlng = new naver.maps.LatLng(target.lat, target.lng);
@@ -34,8 +37,54 @@ for (let i in data) {
         position: latlng,
         icon: {
             content: "<div class='marker'></div>",
+            anchor: new naver.maps.Point(12,12)
         }
     });
+
+    const content = `<div class='infowindow_wrap'>
+        <div class='infowindow_title'>${target.title}</div>
+        <div class='infowindow_content'>${target.content}</div>
+        <div class='infowindow_date'>${target.date}</div>
+        </div>`;
+
+    const infowindow = new naver.maps.InfoWindow({
+        content: content,
+        backgroundColor: "#00ff0000",
+        borderColor: "#00ff0000",
+        anchorSize: new naver.maps.Size(0,0)
+    });
+
+
+    markerList.push(marker);
+    infowindowlist.push(infowindow);
+}
+
+for(let i=0 ; i < markerList.length ; i++) {
+    naver.maps.Event.addListener(map,"click",ClickMap(i));  // 맵을 클릭했을때 ClickMap 이 호출됨
+    naver.maps.Event.addListener(markerList[i], "click", getClickHandler(i));
+}
+
+
+// 맵의 마커가 아닌 다른 곳이 클릭 될 경우 infoWindow가 열린 것을 찾은 뒤 닫아준다.
+function ClickMap(i){
+    return function () {
+        const infowindow = infowindowlist[i];
+        infowindow.close();
+    }
+}
+
+
+function getClickHandler(i) {
+return function () {
+    const marker = markerList[i];
+    const infowindow = infowindowlist[i];
+    if(infowindow.getMap()) {
+        infowindow.close();
+    
+    }else {
+        infowindow.open(map, marker)   
+    }
+}
 }
 </script>
 </body>
