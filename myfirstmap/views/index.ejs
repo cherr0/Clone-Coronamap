@@ -126,7 +126,52 @@ $("#current").click(() => {
     }else {
         alert('위치 정보 사용 불가능');
     }
+});
+
+let ps = new kakao.maps.services.Places();
+let search_arr = []
+
+$("#search_input").on("keydown", function(e){
+    if(e.keyCode === 13) {
+        let content = $(this).val(); // content 값을 가져옴
+        ps.keywordSearch(content, placeSearchCB);   
+    }
+});
+
+$("#search_button").on("click", function(e) {
+    let content = $("#search_input").val();
+    ps.keywordSearch(content, placeSearchCB);
 })
+
+/*
+    data: 목적지를 바탕으로 검색한 결과
+    status: 서버에 대한 상태를 받아옴
+    pagination : 검색 결과가 얼마나 있는지 번호를 통해서 알 수 있음
+*/
+function placeSearchCB(data,status,pagination) {
+    if(status === kakao.maps.services.Status.OK) {
+        let target = data[0]; // 데이터의 첫번째 결과를 가져옴. 만약 그냥 data만 적는다면 배열에 담긴 모든 값들을 가져옴
+        const lat = target.y;
+        const lng = target.x;
+        const latlng = new naver.maps.LatLng(lat, lng);
+        marker = new naver.maps.Marker({
+            position: latlng,
+            map: map
+        });
+        if(search_arr.length == 0) {
+            search_arr.push(marker);
+        }else {
+            search_arr.push(marker);
+            let pre_marker = search_arr.splice(0,1);
+            pre_marker[0].setMap(null);
+        }
+        map.setZoom(14, false); // 확대 위치 설정
+        map.panTo(latlng);  // 지도 위치 변경
+        
+    }else {
+        alert("검색 결과가 없습니다.");
+    }
+}
 </script>
 </body>
 </html>
